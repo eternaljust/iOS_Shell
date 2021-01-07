@@ -15,6 +15,17 @@ ipa_file=""
 api_key=""
 api_issuer=""
 
+check_xcode_command_line_tool() {
+  while [[ $(xcode-select -p 1>/dev/null;echo $?) != 0 ]]; do
+    echo -e "\033[31m 命令行开发者工具未安装！ \033[0m"
+    if [[ ! -d "/Library/Developer/CommandLineTools" ]]; then
+      xcode-select --install
+    else
+      sudo xcode-select --switch /Applications/Xcode.app
+    fi
+  done
+}
+
 check_ipa_code() {
   result=0
   if [[ -z ${ipa_file} ]]; then
@@ -114,6 +125,7 @@ validate_upload_ipa() {
   fi
 }
 
+check_xcode_command_line_tool
 input_output_ipafile
 input_output_apikey
 input_output_apiissuer
