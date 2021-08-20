@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # https://bugly.qq.com/docs/user-guide/symbol-configuration-ios/?v=20210812174918
-# 脚本需要 Java 运行时环境，Bugly 符号表工具上传工具包仅支持 jdk1.8.0，运行环境不支持时会提示是否前往官网下载安装。
+
+# 重要提示：脚本执行需要 upload_dsym_bugly.sh 和 buglyqq-upload-symbol.jar 在同一文件夹目录下
+# 脚本需要 Java 运行时环境，Bugly 符号表工具上传工具包仅支持 jdk1.8.0，运行环境不支持时会提示是否前往官网(https://www.java.com/zh-CN/download/)下载安装。
+# 脚本需要调用当前文件夹目录下 Bugly 符号表工具上传工具包 buglyqq-upload-symbol.jar 文件，jar 文件不存在时会提示是否前往官网(https://bugly.qq.com/v2/downloads)下载解压。
 # 可将 Bugly 后台的 App ID【appid】、App Key【appkey】以及应用的 Bundle identifier【bundleid】填入下方对应的字符串变量中，避免每次输入。
 # dSYM 文件处理上传过程无打印日志，会在处理完结果后统一打印输出。
 
@@ -21,6 +24,16 @@ open_download_jdk() {
   exit
 }
 
+open_download_jar() {
+  url="https://bugly.qq.com/v2/downloads"
+  echo -e "\033[33m 是否打开官网(${url})下载解压 buglyqq-upload-symbol.jar？[y/n]： \033[0m"
+  read open
+  if [[ ${open} == 'y' || ${open} == 'Y' ]]; then
+    open ${url}
+  fi
+  exit
+}
+
 check_jdk() {
   installed=`java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'`
   if [[ ${installed} == "couldn’t" ]]; then
@@ -31,6 +44,15 @@ check_jdk() {
   else
     echo -e "\033[31m Bugly符号表工具上传工具包仅支持jdk1.8.0 \033[0m"
     open_download_jdk
+  fi
+}
+
+check_jar() {
+  if [[ -f "buglyqq-upload-symbol.jar" ]]; then
+    echo -e "\033[35m 当前文件夹目录下存在buglyqq-upload-symbol.jar文件 \033[0m"
+  else
+    echo -e "\033[31m 当前文件夹目录下没有符号表工具上传工具包buglyqq-upload-symbol.jar文件 \033[0m"
+    open_download_jar
   fi
 }
 
@@ -137,6 +159,7 @@ upload_dsym() {
 }
 
 check_jdk
+check_jar
 input_output_dsymfile
 input_output_version
 input_output_bundleid
